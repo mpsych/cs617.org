@@ -1,0 +1,337 @@
+:root {
+  --umbblue: #005a8c;
+  --linkblue: #007fc4;
+  --border: #696969;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: oswald;
+  background-color: black;
+  color: white;
+}
+
+a {
+  color: var(--linkblue);
+  text-decoration: none;
+  cursor: hand;
+}
+
+a:hover {
+  color: white;
+}
+
+
+
+.left {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.image {
+  background-image: url('../gfx/me.jpg');
+  background-size: cover;
+  background-position: center;
+  flex: 1;
+  min-height: 100%;
+  max-width: 30%;
+  border-right: solid 1px var(--border);
+}
+
+.icons {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background-color: rgba(35, 35, 35, 0.5);
+
+  font-family: icomoon!important;
+  font-size: min(30px,4vw);
+  color: white;
+  speak: none;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-decoration: none;
+  letter-spacing: -2px; 
+  text-align: center;
+  padding: 10px;
+}
+
+
+
+.right {
+  flex: 1;
+  overflow-y: hidden;
+  padding: 0px;
+  color: white;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  flex: 1;
+  width:100%;
+  padding: 20px;
+  background-color: black;/*var(--umbblue);*/
+  color: white;
+  box-sizing: border-box;
+  align-items:center;
+  font-size:25px;
+/*  border-bottom: solid 1px var(--border);*/
+}
+
+#umblogo {
+  float:right;
+  width:150px;
+  position: absolute;
+  right: 15px;
+  margin: 20px;
+}
+
+.content {
+  background-color: black;
+  padding: 30px;
+  overflow-y: scroll;
+  height: 100%;
+  box-sizing: border-box;
+  height: calc(100% - 115px);
+}
+
+
+#bockwurst {
+    color: black;
+}
+
+#bockwurst:hover {
+    color: hotpink;
+}
+
+#heart {
+  border: solid thin white;
+  width: 44px;
+  vertical-align: bottom;
+  cursor: pointer;
+}
+
+/*
+ *
+ * FONTZ
+ *
+ */
+
+.bold {
+    font-family: oswald_medium;
+}
+
+.biggerwhite {
+    letter-spacing: -1px; 
+    color: white;
+    font-size: max(30px,3vw);
+    line-height: 120%;
+}
+
+
+.small {
+    font-size: .8em;
+}
+
+.gray {
+    color: gray;
+}
+
+.lightgray {
+    color: lightgray;
+}
+
+
+.mediumwhite{
+    letter-spacing: -1px; 
+    color: white;
+    font-size: max(20px,2vw);
+    line-height: 120%;
+}
+
+highlight {
+  text-decoration: underline solid white;
+  text-decoration-thickness: 2px;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+smallhighlight {
+  text-decoration: underline solid white;
+  text-decoration-thickness: 1px;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.margin50 {
+    margin-top: 50px;
+}
+
+/**
+ * BUTTONS
+ */
+button {
+/*  background-color: var(--linkblue);*/
+  background-color: rgba(0,0,0,0);
+/*  border: none;*/
+  border: solid thin white;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  font-family: oswald_medium;
+}
+
+button:hover {
+  background-color: white; 
+  color: black; 
+/*  border: 2px solid #4CAF50;*/
+}
+
+
+/*
+ *
+ * ICONS
+ *
+ */
+.icon-left-arrow:before {
+    content: "\ea38"
+}
+.icon-right-arrow:before {
+    content: "\ea34"
+}
+.icon-instagram:before {
+    content: "\ea92"
+}
+.icon-twitter:before {
+    content: "\ea96"
+}
+.icon-email:before {
+    content: "\envelop"
+}
+.icon-linkedin:before {
+    content: "\eac9"
+}
+.icon-linkedin2:before {
+    content: "\eaca"
+}
+.icon-email:before {
+    content: "\e945"
+}
+.icon-github:before {
+    content: "\eab0"
+}
+.icon-cv:before {
+    content: "\e923"
+}
+.icon-book:before {
+    content: "\e921"
+}
+
+
+
+/* BIBTEX */
+.danielhaehn {
+    text-decoration: underline;
+}
+
+.thumbnail {
+    border: solid thin var(--linkblue);
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);    
+    
+    max-width: 100%;
+    min-width: 10px;
+    height: auto;
+}
+
+.pub {
+  float:left;
+  padding-bottom: 30px;
+}
+
+.pub_text {
+  padding-left:10px;
+  float:left; 
+  vertical-align: center; 
+  width:600px
+}
+
+.pub .thumbnail {
+  vertical-align: middle;
+}
+
+.pub:hover .thumbnail {
+    filter: grayscale(0%);
+}
+
+.pub .title {
+  font-size: 30px;
+}
+
+.pub .journal {
+  font-size: 20px;
+  color: gray;
+}
+
+.pub .booktitle {
+  font-size: 20px;
+  color: gray;
+}
+
+.pub .year {
+  font-size: 20px;
+  color: gray;
+}
+
+.pubtable:hover .title {
+/*    color: var(--linkblue);*/
+/*color:white;*/
+
+}
+
+.bibtexVar[href='undefined'] {
+    display: none;
+}
+
+[data-innerText]::after {
+  content: attr(data-innerText);
+}
+
+.file_icon {
+    filter: grayscale(100%);
+}
+
+.file_icon:hover {
+    filter: grayscale(0%);
+}
+
+/* DOCUMENTS */
+.document {
+  margin-top: 50px;
+}
+
+.document_thumb {
+  margin-left: 20px;
+  border: solid thin var(--linkblue);
+  vertical-align: middle;
+}
+
+.document_title {
+  margin-left: 20px;
+}
