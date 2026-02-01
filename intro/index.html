@@ -34,6 +34,53 @@
   <body>
     <script>
 
+      function random() {
+
+        cs480_names = [
+            "Ahmed J Ahmed",
+            "Ahmet Aldatmaz",
+            "Eric C Anderson",
+            "Nicholas Chen",
+            "Sophia Cherkaoui",
+            "Elley Frances Lavelle",
+            "Kenzo Matsuo",
+            "Anika Negi",
+            "Tyler Nguyen",
+            "Robert M Nielson",
+            "Ashley Chizoba Nwadike",
+            "Vrund R Patel",
+            "Chase John Quigley",
+            "Vaibhav Saini",
+            "Vraj Pinakin Soni",
+            "Alex T Tong",
+            "Erik Arjun Williamson"
+        ]
+
+        cs697_names = [
+            "Yaseen Syedmohammad Ali",
+            "Nirmit Raj Dholakia",
+            "William F Martinez",
+            "Kalysha Melendez hernand",
+            "Elham Shah"
+        ]
+
+        allNames = [...cs480_names, ...cs697_names];
+        chosenName = allNames[Math.floor(Math.random() * allNames.length)];
+        const el = document.getElementById("chosenone");
+
+   
+        spinTimer = setInterval(() => {
+          el.textContent = allNames[Math.floor(Math.random() * allNames.length)];
+        }, 60); 
+
+        setTimeout(() => {
+          clearInterval(spinTimer);
+          const chosenName = allNames[Math.floor(Math.random() * allNames.length)];
+          el.textContent = chosenName;
+          spinning = false;
+        }, 1600);         
+      }
+
       clicked = false;
 
       // Accents for text-to-speech
@@ -331,6 +378,10 @@
     <video id="intro" style='position:absolute;width:100%;height:100%;top:0px;left:0px;display:none'>
         <source src="intro.mp4">
     </video>
+
+    <div id='portfolio' style='position: absolute; top:20px; right:20px'>
+      <img src='portfolio.png' style='width:200px;cursor:pointer;' onclick='random();'><br><div id='chosenone' style='margin-top:5px;color:white'>......ready for the chosen one</div>
+    </div>
 
 
     <div id='title' style='display:none;
