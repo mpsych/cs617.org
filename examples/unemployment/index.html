@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Labor Force Data Story</title>
+
+  <!-- Chartist v1.5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.js"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      line-height: 1.5;
+    }
+
+    h1 { margin-bottom: 5px; }
+    h2 { margin-top: 0; color: #555; }
+
+    .description {
+      max-width: 700px;
+      margin: 20px 0;
+    }
+
+    .chart-container {
+      max-width: 800px;
+    }
+
+    /* Minimal chart styling */
+    .ct-line {
+      stroke-width: 2px;
+    }
+
+    .ct-series-a .ct-line { stroke: #1f77b4; } /* MA blue */
+    .ct-series-b .ct-line { stroke: #d4af37; } /* US gold */
+
+    .ct-point { display: none; } /* remove points */
+
+    .ct-grid { stroke: #eee; stroke-width: 1px; }
+
+    .ct-axis-title {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Unemployment Trends</h1>
+  <h2>Massachusetts vs United States (2020–2026)</h2>
+
+  <p class="description">
+    Monthly unemployment rates comparing Massachusetts and the nation.
+  </p>
+
+  <div class="chart-container">
+    <div id="chart" class="ct-chart"></div>
+  </div>
+
+  <script>
+    fetch('https://cs617.org/data/massachusetts_unemployment.csv')
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split('\n').slice(6); // skip metadata
+
+        const labels = [];
+        const ma = [];
+        const us = [];
+
+        rows.forEach(row => {
+          const cols = row.split(',');
+
+          if (!cols[0] || cols[0] === 'Annual') return;
+
+          const date = cols[0];
+          const year = date.split('-')[0];
+          const month = date.split('-')[1];
+
+          // show only January labels (year ticks)
+          labels.push(month === '01' ? year : '');
+
+          const maVal = parseFloat(cols[1]);
+          const usVal = parseFloat(cols[2]);
+
+          // handle missing October 2025 (0 -> null)
+          ma.push(maVal === 0 ? null : maVal);
+          us.push(usVal === 0 ? null : usVal);
+        });
+
+        new Chartist.Line('#chart', {
+          labels: labels,
+          series: [ma, us]
+        }, {
+          showPoint: false,
+          fullWidth: true,
+          chartPadding: { right: 20 },
+          axisY: {
+            onlyInteger: true,
+            labelInterpolationFnc: value => value + '%'
+          }
+        });
+      });
+  </script>
+
+</body>
+</html>
