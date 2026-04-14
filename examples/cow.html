@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/vega@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@latest"></script>
+  </head>
+  <body>
+
+
+    <div id='text1'>
+      
+      <h2>Computer Science is the cash cow of CSM!</h2>
+
+      Student enrollment increased heavily over the years...
+
+    </div>
+
+    <div id='chart1'></div>
+
+    <div id='annotation1' style='float:right;'>$11.9m</div>
+
+
+
+    <div id='text2'>While faculty count stayed roughly the same!</div>
+
+    <div id='chart2'></div>
+
+    <div id='annotation2' style='float:right;'>$XXX</div>
+
+    
+
+    <div id='text3'>This results in a huge discrepancy...</div>
+
+    <div id='chart3'></div>
+
+    <div id='annotation3' style='float:right;'>55.4% vs 13.6%</div>
+    
+
+    <div id='text4'>...and we need to hire more faculty!</div>
+
+
+
+
+
+
+
+    <script>
+
+      semesters = ['F17', 'Sp18', 'F18', 'Sp19', 'F19', 'Sp20', 'F20', 'Sp21', 'F21', 'Sp22', 'F22', 'Sp23', 'F23'];
+
+      chart1 = {
+        "width": 800,
+        "height": 400,
+        "data": {
+
+          "values": [{'semester': 'F17', 'students': 1085.0},
+                     {'semester': 'Sp18', 'students': 1005.0},
+                     {'semester': 'F18', 'students': 1145.0},
+                     {'semester': 'Sp19', 'students': 1042.0},
+                     {'semester': 'F19', 'students': 1171},
+                     {'semester': 'Sp20', 'students': 1089.0},
+                     {'semester': 'F20', 'students': 1192.0},
+                     {'semester': 'Sp21', 'students': 1114.0},
+                     {'semester': 'F21', 'students': 1237.0},
+                     {'semester': 'Sp22', 'students': 1194.0},
+                     {'semester': 'F22', 'students': 1490.0},
+                     {'semester': 'Sp23', 'students': 1359.0},
+                     {'semester': 'F23', 'students': 1686.0}]
+
+        },
+
+        "mark": "line",
+
+        "encoding": {
+
+          "x": {"field": "semester",      
+                "type": "ordinal",
+                "sort": semesters},
+          "y": {"field": "students", "type":"quantitative"}
+        }
+
+      };
+
+      chart2 = {
+        "width": 800,
+        "height": 400,
+        "data": {
+
+          "values": [{'semester': 'F17', 'faculty': 22},
+                     {'semester': 'Sp18', 'faculty': 23},
+                     {'semester': 'F18', 'faculty': 23},
+                     {'semester': 'Sp19', 'faculty': 23},
+                     {'semester': 'F19', 'faculty': 24},
+                     {'semester': 'Sp20', 'faculty': 24},
+                     {'semester': 'F20', 'faculty': 24},
+                     {'semester': 'Sp21', 'faculty': 26},
+                     {'semester': 'F21', 'faculty': 25},
+                     {'semester': 'Sp22', 'faculty': 24},
+                     {'semester': 'F22', 'faculty': 23},
+                     {'semester': 'Sp23', 'faculty': 24},
+                     {'semester': 'F23', 'faculty': 25}]
+
+        },
+
+        "mark": "line",
+
+        "encoding": {
+
+          "x": {"field": "semester",      
+                "type": "ordinal",
+                "sort": semesters},
+          "y": {"field": "faculty", "type":"quantitative"},
+          "color": {"value":"#ff7f0e"}
+        }
+      }
+
+
+      chart3 = {
+        "width": 800,
+        "height": 400,
+        "data": {
+
+          "values": [{'semester': 'F17', 'faculty': 0.0, 'student': 0.0},
+                     {'semester': 'Sp18',
+                      'faculty': 4.545454545454541,
+                      'student': -7.3732718894009235},
+                     {'semester': 'F18',
+                      'faculty': 4.545454545454541,
+                      'student': 5.5299539170506895},
+                     {'semester': 'Sp19',
+                      'faculty': 4.545454545454541,
+                      'student': -3.963133640552996},
+                     {'semester': 'F19',
+                      'faculty': 9.090909090909083,
+                      'student': 7.926267281105992},
+                     {'semester': 'Sp20',
+                      'faculty': 9.090909090909083,
+                      'student': 0.36866359447005337},
+                     {'semester': 'F20',
+                      'faculty': 9.090909090909083,
+                      'student': 9.861751152073728},
+                     {'semester': 'Sp21',
+                      'faculty': 18.181818181818187,
+                      'student': 2.6728110599078425},
+                     {'semester': 'F21',
+                      'faculty': 13.636363636363647,
+                      'student': 14.009216589861762},
+                     {'semester': 'Sp22',
+                      'faculty': 9.090909090909083,
+                      'student': 10.046082949308754},
+                     {'semester': 'F22',
+                      'faculty': 4.545454545454541,
+                      'student': 37.32718894009217},
+                     {'semester': 'Sp23',
+                      'faculty': 9.090909090909083,
+                      'student': 25.253456221198167},
+                     {'semester': 'F23',
+                      'faculty': 13.636363636363647,
+                      'student': 55.39170506912443}]
+
+        },
+
+
+        "encoding": {
+
+          "x": {"field": "semester",      
+                "type": "ordinal",
+                "sort": semesters},
+          "y": {"axis": {"title": "% Change from F17"}}
+        },
+        "layer": [
+            {
+              "mark": {"type": "line", "color":"#ff7f0e"},
+              "encoding": {
+                "y": {"field": "faculty", "type": "quantitative"}
+              }
+            },
+            {
+              "mark": {"type": "line"},
+              "encoding": {
+                "y": {"field": "student", "type": "quantitative"}
+              }
+            }
+          ]
+      }
+
+
+
+      vegaEmbed("#chart1", chart1, {actions: false});
+
+      vegaEmbed("#chart2", chart2, {actions: false});
+
+      vegaEmbed("#chart3", chart3, {actions: false});
+
+    </script>
+  </body>
+</html>

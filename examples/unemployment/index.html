@@ -1,45 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Labor Force Data Story</title>
 
-  <!-- Chartist v1.5 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/index.css">
+  <script src="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/index.umd.js"></script>
 
   <style>
     body {
       font-family: sans-serif;
       margin: 40px;
       line-height: 1.5;
+      color: #111;
     }
 
-    h1 { margin-bottom: 5px; }
-    h2 { margin-top: 0; color: #555; }
+    h1 {
+      margin: 0 0 6px 0;
+      font-size: 2rem;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #555;
+    }
 
     .description {
-      max-width: 700px;
-      margin: 20px 0;
+      max-width: 720px;
+      margin: 18px 0 20px 0;
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      margin: 0 0 18px 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 0;
+      border-top: 3px solid;
+    }
+
+    .legend-line.ma {
+      border-color: #1f77b4;
+    }
+
+    .legend-line.us {
+      border-color: #d4af37;
     }
 
     .chart-container {
-      max-width: 800px;
+      max-width: 900px;
+      position: relative;
     }
 
-    /* Minimal chart styling */
+    #chart {
+      height: 420px;
+    }
+
+    .annotation {
+      position: absolute;
+      font-size: 12px;
+      color: #444;
+      background: rgba(255,255,255,0.92);
+      padding: 4px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      max-width: 180px;
+    }
+
+    .annotation-line {
+      position: absolute;
+      width: 1px;
+      background: #999;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
     .ct-line {
-      stroke-width: 2px;
+      fill: none;
+      stroke-width: 3px;
     }
 
-    .ct-series-a .ct-line { stroke: #1f77b4; } /* MA blue */
-    .ct-series-b .ct-line { stroke: #d4af37; } /* US gold */
+    .ct-point {
+      display: none;
+    }
 
-    .ct-point { display: none; } /* remove points */
+    .ct-series-a .ct-line {
+      stroke: #1f77b4;
+    }
 
-    .ct-grid { stroke: #eee; stroke-width: 1px; }
+    .ct-series-b .ct-line {
+      stroke: #d4af37;
+    }
 
-    .ct-axis-title {
+    .ct-grid.ct-vertical {
+      display: none;
+    }
+
+    .ct-grid.ct-horizontal {
+      stroke: #e8e8e8;
+      stroke-width: 1px;
+      stroke-dasharray: 0;
+    }
+
+    .ct-label {
+      color: #666;
       font-size: 12px;
     }
   </style>
@@ -47,56 +125,148 @@
 <body>
 
   <h1>Unemployment Trends</h1>
-  <h2>Massachusetts vs United States (2020–2026)</h2>
+  <h2>Massachusetts vs United States, 2020–2026</h2>
 
   <p class="description">
-    Monthly unemployment rates comparing Massachusetts and the nation.
+    Monthly unemployment rates for Massachusetts and the nation.
   </p>
 
+  <div class="legend">
+    <div class="legend-item"><span class="legend-line ma"></span><span>Massachusetts</span></div>
+    <div class="legend-item"><span class="legend-line us"></span><span>United States</span></div>
+  </div>
+
   <div class="chart-container">
-    <div id="chart" class="ct-chart"></div>
+    <div id="chart"></div>
   </div>
 
   <script>
     fetch('https://cs617.org/data/massachusetts_unemployment.csv')
-      .then(res => res.text())
+      .then(response => response.text())
       .then(text => {
-        const rows = text.split('\n').slice(6); // skip metadata
+        const lines = text.trim().split('\n').slice(7);
+
+        const monthIndex = {
+          January: 1, February: 2, March: 3, April: 4,
+          May: 5, June: 6, July: 7, August: 8,
+          September: 9, October: 10, November: 11, December: 12
+        };
+
+        const rows = lines
+          .map(line => line.split(',').map(d => d.replace(/"/g, '').trim()))
+          .filter(d => d.length >= 9);
+
+        rows.sort((a, b) => {
+          const yA = parseInt(a[0], 10);
+          const yB = parseInt(b[0], 10);
+          if (yA !== yB) return yA - yB;
+          return monthIndex[a[1]] - monthIndex[b[1]];
+        });
 
         const labels = [];
         const ma = [];
         const us = [];
+        const meta = [];
 
-        rows.forEach(row => {
-          const cols = row.split(',');
+        rows.forEach(d => {
+          const year = d[0];
+          const month = d[1];
+          const maVal = parseFloat(d[6]);
+          const usVal = parseFloat(d[8]);
+          const missing = year === '2025' && month === 'October';
 
-          if (!cols[0] || cols[0] === 'Annual') return;
-
-          const date = cols[0];
-          const year = date.split('-')[0];
-          const month = date.split('-')[1];
-
-          // show only January labels (year ticks)
-          labels.push(month === '01' ? year : '');
-
-          const maVal = parseFloat(cols[1]);
-          const usVal = parseFloat(cols[2]);
-
-          // handle missing October 2025 (0 -> null)
-          ma.push(maVal === 0 ? null : maVal);
-          us.push(usVal === 0 ? null : usVal);
+          labels.push(month === 'January' ? year : '');
+          ma.push(missing ? null : maVal);
+          us.push(missing ? null : usVal);
+          meta.push({ year, month });
         });
 
-        new Chartist.Line('#chart', {
-          labels: labels,
+        const allValues = [...ma, ...us].filter(v => v !== null && !isNaN(v));
+        const minY = Math.floor(Math.min(...allValues));
+        const maxY = Math.ceil(Math.max(...allValues));
+
+        const chart = new Chartist.LineChart('#chart', {
+          labels,
           series: [ma, us]
         }, {
-          showPoint: false,
           fullWidth: true,
-          chartPadding: { right: 20 },
+          showPoint: false,
+          lineSmooth: false,
+          low: minY,
+          high: maxY,
+          chartPadding: {
+            top: 10,
+            right: 20,
+            bottom: 20,
+            left: 10
+          },
+          axisX: {
+            offset: 30
+          },
           axisY: {
             onlyInteger: true,
-            labelInterpolationFnc: value => value + '%'
+            offset: 40,
+            labelInterpolationFnc: value =>
+              Number.isInteger(value) ? value + '%' : ''
+          }
+        });
+
+        chart.on('created', function(ctx) {
+          const container = document.querySelector('.chart-container');
+          container.querySelectorAll('.annotation, .annotation-line').forEach(el => el.remove());
+
+          const chartRect = ctx.chartRect;
+          const n = labels.length - 1;
+
+          function xForIndex(i) {
+            return chartRect.x1 + (chartRect.width() * i / n);
+          }
+
+          function yForValue(v) {
+            return chartRect.y1 - (chartRect.height() * (v - minY) / (maxY - minY));
+          }
+
+          function addAnnotation(index, value, text, dx, dy, lineTopPad = 0) {
+            const x = xForIndex(index);
+            const y = yForValue(value);
+
+            const line = document.createElement('div');
+            line.className = 'annotation-line';
+            line.style.left = `${x}px`;
+            line.style.top = `${y - lineTopPad}px`;
+            line.style.height = `${chartRect.y1 - y + lineTopPad}px`;
+            container.appendChild(line);
+
+            const label = document.createElement('div');
+            label.className = 'annotation';
+            label.textContent = text;
+            label.style.left = `${x + dx}px`;
+            label.style.top = `${y + dy}px`;
+            container.appendChild(label);
+          }
+
+          const covidIndex = meta.findIndex(d => d.year === '2020' && d.month === 'April');
+          if (covidIndex !== -1 && ma[covidIndex] !== null) {
+            addAnnotation(
+              covidIndex,
+              Math.max(ma[covidIndex], us[covidIndex]),
+              'COVID spike',
+              10,
+              -42,
+              10
+            );
+          }
+
+          const shutdownIndex = meta.findIndex(d => d.year === '2025' && d.month === 'October');
+          if (shutdownIndex !== -1) {
+            addAnnotation(
+              shutdownIndex,
+              minY + 0.5,
+              'Oct 2025 missing data\n(government shutdown)',
+              10,
+              -14,
+              0
+            );
           }
         });
       });

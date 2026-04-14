@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labor Force Story — Chart 1 Prototype</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.css" />
+
+  <style>
+    :root {
+      --bg: #fffdf8;
+      --text: #161616;
+      --muted: #6f6f6f;
+      --grid: rgba(0,0,0,0.08);
+      --ma: #1d4ed8;
+      --us: #f59e0b;
+      --covid: rgba(220, 38, 38, 0.08);
+      --biden: rgba(29, 78, 216, 0.07);
+      --trump: rgba(245, 158, 11, 0.09);
+      --card: #ffffff;
+      --border: rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    body {
+      padding: 48px 20px 80px;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.75rem);
+      line-height: 1.03;
+      margin: 0 0 14px;
+      max-width: 12ch;
+    }
+
+    .subheadline {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #333;
+      max-width: 60ch;
+      margin-bottom: 40px;
+    }
+
+    .intro {
+      max-width: 66ch;
+      color: #353535;
+      font-size: 1rem;
+      margin-bottom: 46px;
+    }
+
+    .scrolly {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(420px, 1.4fr);
+      gap: 36px;
+      align-items: start;
+    }
+
+    .steps {
+      position: relative;
+    }
+
+    .step {
+      min-height: 75vh;
+      display: flex;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .step-inner {
+      background: transparent;
+      border-left: 3px solid transparent;
+      padding: 0 0 0 18px;
+      transition: all 220ms ease;
+      max-width: 34ch;
+    }
+
+    .step.active .step-inner {
+      border-left-color: var(--text);
+      transform: translateX(2px);
+    }
+
+    .step-kicker {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .step h2 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .step p {
+      margin: 0;
+      color: #383838;
+      font-size: 1rem;
+    }
+
+    .chart-column {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+    }
+
+    .chart-card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 22px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+
+    .chart-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .chart-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+    }
+
+    .desc-panel {
+      min-height: 118px;
+      margin-bottom: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #faf9f5;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .desc-panel .desc-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .desc-panel .desc-headline {
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .desc-panel .desc-body {
+      font-size: 0.95rem;
+      color: #3a3a3a;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 460px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    #chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .overlay-band {
+      position: absolute;
+      top: 18px;
+      bottom: 42px;
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+
+    .overlay-band.show {
+      opacity: 1;
+    }
+
+    .overlay-covid { background: var(--covid); }
+    .overlay-biden { background: var(--biden); }
+    .overlay-trump { background: var(--trump); }
+
+    .overlay-label {
+      position: absolute;
+      top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.88);
+      border: 1px solid rgba(0,0,0,0.08);
+      color: #222;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 300ms ease;
+      white-space: nowrap;
+    }
+
+    .overlay-label.show { opacity: 1; }
+
+    .annotation-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .legend-inline {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      color: #464646;
+      font-size: 0.9rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch-line {
+      width: 28px;
+      height: 0;
+      border-top-width: 4px;
+      border-top-style: solid;
+      border-radius: 999px;
+    }
+
+    .source-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .next-section {
+      margin-top: 80px;
+      padding-top: 26px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      max-width: 60ch;
+    }
+
+    /* Chartist cleanup */
+    .ct-series-a .ct-line {
+      stroke: var(--ma);
+      stroke-width: 4px;
+      stroke-linecap: round;
+    }
+
+    .ct-series-b .ct-line {
+      stroke: var(--us);
+      stroke-width: 3px;
+      stroke-linecap: round;
+    }
+
+    .ct-series-a .ct-point,
+    .ct-series-b .ct-point {
+      stroke-width: 0;
+      opacity: 0;
+    }
+
+    .ct-grid.ct-horizontal {
+      display: none;
+    }
+
+    .ct-grid.ct-vertical {
+      stroke: var(--grid);
+      stroke-dasharray: 0;
+      stroke-width: 1px;
+    }
+
+    .ct-label {
+      color: #555;
+      fill: #555;
+      font-size: 12px;
+    }
+
+    .ct-chart-line .ct-label.ct-vertical.ct-start {
+      text-anchor: end;
+    }
+
+    .annotation-text {
+      font-size: 12px;
+      fill: #222;
+      font-weight: 600;
+    }
+
+    .annotation-subtext {
+      font-size: 11px;
+      fill: #575757;
+    }
+
+    .annotation-dot {
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .annotation-callout {
+      fill: rgba(255,255,255,0.92);
+      stroke: rgba(0,0,0,0.08);
+      stroke-width: 1;
+      rx: 8;
+      ry: 8;
+    }
+
+    .annotation-line {
+      stroke: rgba(0,0,0,0.18);
+      stroke-width: 1;
+    }
+
+    @media (max-width: 900px) {
+      .scrolly {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-column {
+        position: relative;
+        top: auto;
+      }
+
+      .step {
+        min-height: 52vh;
+      }
+
+      .chart-wrap {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="eyebrow">Massachusetts Labor Force Story</div>
+    <h1>The unemployment shock was shared, but the recovery paths were not identical</h1>
+    <div class="subheadline">
+      Monthly unemployment rates from January 2020 to January 2026 show the COVID spike, the recovery phase,
+      and a renewed gap between Massachusetts and the nation.
+    </div>
+
+    <div class="intro">
+      This first chart establishes the main timeline of the story. It starts with the abrupt labor-market shock of 2020,
+      then follows the long normalization period, and ends by setting up a political-period comparison that the second chart can unpack more directly.
+    </div>
+
+    <div class="scrolly">
+      <div class="steps">
+        <section class="step active" data-step="0">
+          <div class="step-inner">
+            <div class="step-kicker">Chart 1</div>
+            <h2>Start with the full arc</h2>
+            <p>
+              Show both lines together first. The overall shape matters more than details at this point: a sharp pandemic spike,
+              a long decline, and a recent rise by early 2026.
+            </p>
+          </div>
+        </section>
+
+        <section class="step" data-step="1">
+          <div class="step-inner">
+            <div class="step-kicker">Scroll insight</div>
+            <h2>COVID caused the major break</h2>
+            <p>
+              In April 2020, Massachusetts peaked at 17.2% unemployment, above the national peak of 14.4%.
+              This is the chart’s dominant turning point and should be the first annotation reveal.
+            </p>
+          </div>
+        </section>
+
+        <section class="step" data-step="2">
+          <div class="step-inner">
+            <div class="step-kicker">Scroll insight</div>
+            <h2>Then highlight the Biden period</h2>
+            <p>
+              Shade January 2021 through January 2025 as one period of recovery. The goal here is not argument yet,
+              but visual framing for the next chart where the presidencies will be compared directly.
+            </p>
+          </div>
+        </section>
+
+        <section class="step" data-step="3">
+          <div class="step-inner">
+            <div class="step-kicker">Scroll insight</div>
+            <h2>Then mark Trump 2025 to now</h2>
+            <p>
+              Finally, isolate January 2025 through January 2026. This keeps the timeline legible and gives Chart 2
+              a clean handoff into the Biden-versus-Trump comparison.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div class="chart-column">
+        <div class="chart-card">
+          <div class="chart-title">Chart 1. Unemployment rate over time</div>
+          <div class="chart-subtitle">Massachusetts vs. United States, monthly, January 2020 to January 2026</div>
+
+          <div class="desc-panel" id="descPanel">
+            <div class="desc-kicker" id="descKicker">Overview</div>
+            <div class="desc-headline" id="descHeadline">Two lines tell the full arc</div>
+            <div class="desc-body" id="descBody">
+              The story opens with the complete trajectory: both Massachusetts and the nation spike in 2020,
+              recover over several years, and end with Massachusetts slightly above the national unemployment rate in January 2026.
+            </div>
+          </div>
+
+          <div class="chart-wrap" id="chartWrap">
+            <div id="bandCovid" class="overlay-band overlay-covid"></div>
+            <div id="bandBiden" class="overlay-band overlay-biden"></div>
+            <div id="bandTrump" class="overlay-band overlay-trump"></div>
+
+            <div id="labelCovid" class="overlay-label">COVID shock</div>
+            <div id="labelBiden" class="overlay-label">Biden: 2021–Jan 2025</div>
+            <div id="labelTrump" class="overlay-label">Trump: Jan 2025–now</div>
+
+            <div id="chart"></div>
+            <svg class="annotation-layer" id="annotationLayer"></svg>
+          </div>
+
+          <div class="legend-inline">
+            <div class="legend-item">
+              <span class="swatch-line" style="border-top-color: var(--ma);"></span>
+              <span>Massachusetts</span>
+            </div>
+            <div class="legend-item">
+              <span class="swatch-line" style="border-top-color: var(--us);"></span>
+              <span>United States</span>
+            </div>
+          </div>
+
+          <div class="source-note">
+            Note: October 2025 is treated as missing because the source file contains a zero placeholder tied to a shutdown-related data issue.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="next-section">
+      <strong>Handoff to Chart 2:</strong>
+      This first chart establishes the timeline and the key periods. The next chart can now directly compare
+      the Biden period versus the Trump 2025-to-present period using a tighter framing and a stronger evaluative lens.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chartist@1.5.0/dist/chartist.min.js"></script>
+  <script>
+    const labels = [
+      "2020","","","","","","","","","","","","2021","","","","","","","","","","","","2022","","","","","","","","","","","","2023","","","","","","","","","","","","2024","","","","","","","","","","","","2025","","","","","","","","","","","","2026"
+    ];
+
+    const dates = [
+      "2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01",
+      "2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01",
+      "2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01",
+      "2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01",
+      "2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01",
+      "2025-01-01","2025-02-01","2025-03-01","2025-04-01","2025-05-01","2025-06-01","2025-07-01","2025-08-01","2025-09-01","2025-10-01","2025-11-01","2025-12-01",
+      "2026-01-01"
+    ];
+
+    const ma = [
+      3.5,3.4,3.8,17.2,14.5,16.1,16.9,11.3,9.8,7.1,7.0,6.8,
+      7.0,7.0,6.4,5.8,5.1,5.7,5.1,5.3,5.0,4.9,4.6,4.4,
+      4.3,4.2,4.1,4.2,4.0,4.1,3.7,3.6,3.7,3.6,3.5,3.2,
+      3.7,4.0,4.2,4.0,4.1,4.0,3.9,3.9,4.0,4.1,4.0,4.0,
+      4.1,4.3,4.0,3.4,3.9,4.1,4.2,4.3,4.2,4.1,3.8,3.9,
+      4.6,4.8,4.5,4.0,4.4,4.5,4.7,4.6,4.4,null,4.6,4.6,
+      5.2
+    ];
+
+    const us = [
+      4.0,3.8,4.5,14.4,13.0,11.2,10.2,8.4,7.8,6.7,6.7,6.7,
+      6.4,6.2,6.1,5.4,5.8,6.1,5.4,5.1,4.7,4.5,4.0,3.7,
+      4.0,4.1,4.0,3.8,3.5,3.7,3.5,3.6,3.5,3.4,3.6,3.5,
+      3.4,3.6,3.5,3.1,3.4,3.6,3.5,3.6,3.8,3.9,3.7,3.7,
+      4.1,4.2,3.9,3.5,3.7,4.0,4.3,4.2,4.1,4.1,4.0,3.8,
+      4.4,4.5,4.2,3.9,4.0,4.4,4.6,4.5,4.3,null,4.3,4.1,
+      4.7
+    ];
+
+    const steps = [
+      {
+        kicker: "Overview",
+        headline: "Two lines tell the full arc",
+        body: "The story opens with the complete trajectory: both Massachusetts and the nation spike in 2020, recover over several years, and end with Massachusetts slightly above the national unemployment rate in January 2026."
+      },
+      {
+        kicker: "COVID shock",
+        headline: "The break in the series is immediate and dramatic",
+        body: "In April 2020, Massachusetts peaks at 17.2% while the U.S. peaks at 14.4%. This is the visual and narrative rupture that anchors the chart."
+      },
+      {
+        kicker: "Biden period",
+        headline: "Recovery dominates 2021 to January 2025",
+        body: "Shade January 2021 through January 2025 as the long normalization period. This prepares the viewer for the political-period comparison in Chart 2 without overexplaining it here."
+      },
+      {
+        kicker: "Trump period",
+        headline: "Then isolate January 2025 to now",
+        body: "The final state focuses attention on the most recent segment, where Massachusetts remains above the national unemployment rate and January 2026 ends at 5.2% versus 4.7% nationally."
+      }
+    ];
+
+    const descKicker = document.getElementById("descKicker");
+    const descHeadline = document.getElementById("descHeadline");
+    const descBody = document.getElementById("descBody");
+
+    let chart;
+    let chartMetrics = null;
+    let currentStep = 0;
+
+    function pointX(index) {
+      return chartMetrics.chartRect.x1 + (index / (dates.length - 1)) * chartMetrics.chartRect.width();
+    }
+
+    function pointY(value) {
+      const low = chartMetrics.bounds.min;
+      const high = chartMetrics.bounds.max;
+      return chartMetrics.chartRect.y1 - ((value - low) / (high - low)) * chartMetrics.chartRect.height();
+    }
+
+    function clearAnnotations() {
+      const svg = document.getElementById("annotationLayer");
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+    }
+
+    function addSvgEl(tag, attrs, text) {
+      const svg = document.getElementById("annotationLayer");
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs || {}).forEach(([k,v]) => el.setAttribute(k, v));
+      if (text) el.textContent = text;
+      svg.appendChild(el);
+      return el;
+    }
+
+    function addCallout(x, y, width, height, title, subtitle, dotColor, dotX, dotY) {
+      addSvgEl("line", {
+        x1: dotX,
+        y1: dotY,
+        x2: x + 10,
+        y2: y + height / 2,
+        class: "annotation-line"
+      });
+
+      addSvgEl("rect", {
+        x, y, width, height,
+        class: "annotation-callout"
+      });
+
+      addSvgEl("circle", {
+        cx: dotX,
+        cy: dotY,
+        r: 5,
+        fill: dotColor,
+        class: "annotation-dot"
+      });
+
+      addSvgEl("text", {
+        x: x + 12,
+        y: y + 18,
+        class: "annotation-text"
+      }, title);
+
+      addSvgEl("text", {
+        x: x + 12,
+        y: y + 35,
+        class: "annotation-subtext"
+      }, subtitle);
+    }
+
+    function showBand(id, startIndex, endIndex, labelId) {
+      const band = document.getElementById(id);
+      const label = document.getElementById(labelId);
+      const left = pointX(startIndex);
+      const right = pointX(endIndex);
+
+      band.style.left = left + "px";
+      band.style.width = Math.max(8, right - left) + "px";
+      band.classList.add("show");
+
+      label.style.left = Math.max(12, left + 8) + "px";
+      label.classList.add("show");
+    }
+
+    function hideBand(id, labelId) {
+      document.getElementById(id).classList.remove("show");
+      document.getElementById(labelId).classList.remove("show");
+    }
+
+    function renderAnnotations(stepIndex) {
+      if (!chartMetrics) return;
+
+      clearAnnotations();
+      hideBand("bandCovid", "labelCovid");
+      hideBand("bandBiden", "labelBiden");
+      hideBand("bandTrump", "labelTrump");
+
+      const wrap = document.getElementById("chartWrap");
+      const svg = document.getElementById("annotationLayer");
+      svg.setAttribute("width", wrap.clientWidth);
+      svg.setAttribute("height", wrap.clientHeight);
+      svg.setAttribute("viewBox", `0 0 ${wrap.clientWidth} ${wrap.clientHeight}`);
+
+      const idxApr2020 = dates.indexOf("2020-04-01");
+      const idxJan2021 = dates.indexOf("2021-01-01");
+      const idxJan2025 = dates.indexOf("2025-01-01");
+      const idxJan2026 = dates.indexOf("2026-01-01");
+      const idxOct2025 = dates.indexOf("2025-10-01");
+
+      if (stepIndex === 0) {
+        const xMA = pointX(idxJan2026);
+        const yMA = pointY(5.2);
+        const xUS = pointX(idxJan2026);
+        const yUS = pointY(4.7);
+
+        addSvgEl("text", {
+          x: xMA + 8,
+          y: yMA + 4,
+          class: "annotation-text",
+          fill: "var(--ma)"
+        }, "MA 5.2%");
+
+        addSvgEl("text", {
+          x: xUS + 8,
+          y: yUS - 8,
+          class: "annotation-text",
+          fill: "var(--us)"
+        }, "U.S. 4.7%");
+      }
+
+      if (stepIndex === 1) {
+        showBand("bandCovid", idxApr2020 - 1, idxApr2020 + 2, "labelCovid");
+
+        const dotX = pointX(idxApr2020);
+        const dotY = pointY(17.2);
+        addCallout(
+          Math.min(dotX + 14, wrap.clientWidth - 180),
+          Math.max(28, dotY - 18),
+          160,
+          48,
+          "April 2020 peak",
+          "MA 17.2%, U.S. 14.4%",
+          "#dc2626",
+          dotX,
+          dotY
+        );
+      }
+
+      if (stepIndex === 2) {
+        showBand("bandBiden", idxJan2021, idxJan2025, "labelBiden");
+
+        const dotX = pointX(idxJan2025);
+        const dotY = pointY(4.6);
+        addCallout(
+          Math.max(16, dotX - 180),
+          Math.max(38, dotY - 54),
+          168,
+          50,
+          "End of this frame",
+          "Jan 2025 begins next comparison",
+          "#1d4ed8",
+          dotX,
+          dotY
+        );
+      }
+
+      if (stepIndex === 3) {
+        showBand("bandTrump", idxJan2025, idxJan2026, "labelTrump");
+
+        const dotX = pointX(idxJan2026);
+        const dotY = pointY(5.2);
+        addCallout(
+          Math.max(16, dotX - 176),
+          Math.max(32, dotY - 58),
+          164,
+          52,
+          "Latest reading",
+          "Jan 2026: MA 5.2%, U.S. 4.7%",
+          "#f59e0b",
+          dotX,
+          dotY
+        );
+
+        const missX = pointX(idxOct2025);
+        const missY = chartMetrics.chartRect.y1 - 12;
+        addSvgEl("line", {
+          x1: missX,
+          y1: chartMetrics.chartRect.y2,
+          x2: missX,
+          y2: chartMetrics.chartRect.y1,
+          stroke: "rgba(0,0,0,0.12)",
+          "stroke-dasharray": "4 4"
+        });
+
+        addSvgEl("text", {
+          x: Math.min(missX + 6, wrap.clientWidth - 132),
+          y: missY,
+          class: "annotation-subtext"
+        }, "Oct 2025 missing");
+      }
+    }
+
+    function renderChart() {
+      chart = new Chartist.LineChart('#chart', {
+        labels,
+        series: [ma, us]
+      }, {
+        fullWidth: true,
+        chartPadding: {
+          top: 24,
+          right: 72,
+          bottom: 28,
+          left: 18
+        },
+        low: 3,
+        high: 18,
+        showPoint: false,
+        lineSmooth: false,
+        axisX: {
+          showGrid: false,
+          offset: 30
+        },
+        axisY: {
+          onlyInteger: true,
+          offset: 42,
+          labelInterpolationFnc: function(value) {
+            return Number.isInteger(value) ? value + "%" : "";
+          }
+        }
+      });
+
+      chart.on('created', function(ctx) {
+        chartMetrics = {
+          chartRect: ctx.chartRect,
+          bounds: ctx.bounds
+        };
+        renderAnnotations(currentStep);
+      });
+
+      chart.on('draw', function(data) {
+        if (data.type === 'point') {
+          data.element.attr({ style: 'display:none' });
+        }
+      });
+    }
+
+    function activateStep(index) {
+      currentStep = index;
+      document.querySelectorAll(".step").forEach((stepEl, i) => {
+        stepEl.classList.toggle("active", i === index);
+      });
+
+      descKicker.textContent = steps[index].kicker;
+      descHeadline.textContent = steps[index].headline;
+      descBody.textContent = steps[index].body;
+
+      renderAnnotations(index);
+    }
+
+    renderChart();
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = Number(entry.target.dataset.step);
+          activateStep(index);
+        }
+      });
+    }, {
+      threshold: 0.6
+    });
+
+    document.querySelectorAll(".step").forEach(step => observer.observe(step));
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window.__resizeTimer);
+      window.__resizeTimer = setTimeout(() => {
+        renderChart();
+      }, 140);
+    });
+  </script>
+</body>
+</html>
