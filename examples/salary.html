@@ -1,0 +1,317 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Faculty Salary vs Rating Explorer</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fafafa;
+      color: #111;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 28px auto;
+      padding: 0 22px 40px;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: #555;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 240px 240px 220px;
+      gap: 12px;
+      margin: 18px 0;
+      align-items: end;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      display: block;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    input, select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d0d0d0;
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e2e2;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.035);
+    }
+    .metric {
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 3px;
+    }
+    #plot {
+      height: 620px;
+      background: white;
+      border: 1px solid #e2e2e2;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.035);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      background: white;
+      border: 1px solid #e2e2e2;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.035);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: #f4f4f4;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #555;
+      cursor: pointer;
+      user-select: none;
+    }
+    tr:hover td {
+      background: #f7f7f7;
+    }
+    .note {
+      margin-top: 10px;
+      color: #666;
+      font-size: 13px;
+    }
+    @media (max-width: 900px) {
+      .controls, .cards {
+        grid-template-columns: 1fr;
+      }
+      #plot {
+        height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Faculty Salary vs Rating Explorer</h1>
+  <div class="subtitle">
+    Interactive scatterplot for exploring annual salary and public student rating. Hover over points, zoom, pan, filter by name/rating/salary, and sort the table.
+  </div>
+
+  <div class="controls">
+    <div>
+      <label for="search">Search name</label>
+      <input id="search" placeholder="e.g., Daniel, Babur, Suzuki">
+    </div>
+    <div>
+      <label for="minRating">Minimum rating</label>
+      <input id="minRating" type="number" min="0" max="5" step="0.1" value="0">
+    </div>
+    <div>
+      <label for="maxSalary">Maximum salary</label>
+      <input id="maxSalary" type="number" min="0" step="1000" value="259599">
+    </div>
+    <div>
+      <label for="labelMode">Labels</label>
+      <select id="labelMode">
+        <option value="hover">Hover only</option>
+        <option value="all">Show all names</option>
+        <option value="top">Show top salaries + ratings</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><label>Visible people</label><div class="metric" id="nMetric"></div></div>
+    <div class="card"><label>Median salary</label><div class="metric" id="medianSalary"></div></div>
+    <div class="card"><label>Median rating</label><div class="metric" id="medianRating"></div></div>
+    <div class="card"><label>Salary-rating corr.</label><div class="metric" id="corrMetric"></div></div>
+  </div>
+
+  <div id="plot"></div>
+  <div class="note">Tip: double-click the plot to reset zoom. Click column headers below to sort.</div>
+  <table id="table"></table>
+</div>
+
+<script>
+const data = [{"name": "Dan Simovici", "salary": 259599.81, "salary_k": 259.59981, "rating": 3.8, "salary_label": "$259,600", "rank_salary": 1, "rank_rating": 8}, {"name": "Nurit Haspel", "salary": 204841.375, "salary_k": 204.841375, "rating": 4.4, "salary_label": "$204,841", "rank_salary": 2, "rank_rating": 4}, {"name": "Bo Sheng", "salary": 174575.267, "salary_k": 174.575267, "rating": 3.5, "salary_label": "$174,575", "rank_salary": 3, "rank_rating": 10}, {"name": "Duc Tran", "salary": 168652.163, "salary_k": 168.652163, "rating": 2.3, "salary_label": "$168,652", "rank_salary": 4, "rank_rating": 18}, {"name": "Jun Suzuki", "salary": 167461.427, "salary_k": 167.461427, "rating": 3.3, "salary_label": "$167,461", "rank_salary": 5, "rank_rating": 12}, {"name": "Gabriel Ghinita", "salary": 156715.556, "salary_k": 156.71555600000002, "rating": 3.7, "salary_label": "$156,716", "rank_salary": 6, "rank_rating": 9}, {"name": "Xiaohui Liang", "salary": 146382.724, "salary_k": 146.382724, "rating": 1.4, "salary_label": "$146,383", "rank_salary": 7, "rank_rating": 20}, {"name": "Kenneth Fletcher", "salary": 142141.707, "salary_k": 142.141707, "rating": 4.3, "salary_label": "$142,142", "rank_salary": 8, "rank_rating": 5}, {"name": "Christopher Kelly", "salary": 141540.0, "salary_k": 141.54, "rating": 1.9, "salary_label": "$141,540", "rank_salary": 9, "rank_rating": 19}, {"name": "Funda Durupinar Babur", "salary": 141052.436, "salary_k": 141.052436, "rating": 4.5, "salary_label": "$141,052", "rank_salary": 10, "rank_rating": 2}, {"name": "Daniel Haehn", "salary": 141052.436, "salary_k": 141.052436, "rating": 5.0, "salary_label": "$141,052", "rank_salary": 10, "rank_rating": 1}, {"name": "Tiago Cogumbreiro", "salary": 138556.061, "salary_k": 138.556061, "rating": 4.5, "salary_label": "$138,556", "rank_salary": 12, "rank_rating": 2}, {"name": "Ozgun Babur", "salary": 129074.327, "salary_k": 129.074327, "rating": 1.4, "salary_label": "$129,074", "rank_salary": 13, "rank_rating": 20}, {"name": "Stephen Chang", "salary": 129074.327, "salary_k": 129.074327, "rating": 3.4, "salary_label": "$129,074", "rank_salary": 13, "rank_rating": 11}, {"name": "Yinxin Wan", "salary": 121541.615, "salary_k": 121.54161500000001, "rating": 1.0, "salary_label": "$121,542", "rank_salary": 15, "rank_rating": 23}, {"name": "Shichao Pei", "salary": 116866.689, "salary_k": 116.866689, "rating": 3.9, "salary_label": "$116,867", "rank_salary": 16, "rank_rating": 6}, {"name": "Swami Iyer", "salary": 97669.428, "salary_k": 97.669428, "rating": 3.3, "salary_label": "$97,669", "rank_salary": 17, "rank_rating": 12}, {"name": "Glenn Hoffman", "salary": 82414.418, "salary_k": 82.41441800000001, "rating": 3.9, "salary_label": "$82,414", "rank_salary": 18, "rank_rating": 6}, {"name": "Amanda Potasznik", "salary": 81890.739, "salary_k": 81.890739, "rating": 3.0, "salary_label": "$81,891", "rank_salary": 19, "rank_rating": 14}, {"name": "Torna Soro", "salary": 79135.065, "salary_k": 79.135065, "rating": 3.0, "salary_label": "$79,135", "rank_salary": 20, "rank_rating": 14}, {"name": "Temitayo Banjo", "salary": 71575.061, "salary_k": 71.575061, "rating": 2.4, "salary_label": "$71,575", "rank_salary": 21, "rank_rating": 17}, {"name": "Beatrice Perez", "salary": 63021.444, "salary_k": 63.021444, "rating": 1.3, "salary_label": "$63,021", "rank_salary": 22, "rank_rating": 22}, {"name": "Soheil Sepahyar", "salary": 61350.0, "salary_k": 61.35, "rating": 2.6, "salary_label": "$61,350", "rank_salary": 23, "rank_rating": 16}];
+
+let sortKey = "salary";
+let sortDir = -1;
+
+function fmtMoney(x) {
+  return "$" + Math.round(x).toLocaleString();
+}
+
+function median(arr) {
+  if (!arr.length) return NaN;
+  const a = [...arr].sort((x,y) => x-y);
+  const mid = Math.floor(a.length / 2);
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+}
+
+function corr(xs, ys) {
+  const n = xs.length;
+  if (n < 2) return NaN;
+  const mx = xs.reduce((a,b)=>a+b,0)/n;
+  const my = ys.reduce((a,b)=>a+b,0)/n;
+  let num = 0, dx = 0, dy = 0;
+  for (let i=0; i<n; i++) {
+    const vx = xs[i]-mx, vy = ys[i]-my;
+    num += vx*vy; dx += vx*vx; dy += vy*vy;
+  }
+  return num / Math.sqrt(dx*dy);
+}
+
+function filteredData() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const minRating = parseFloat(document.getElementById("minRating").value || "0");
+  const maxSalary = parseFloat(document.getElementById("maxSalary").value || "999999999");
+  return data.filter(d =>
+    d.name.toLowerCase().includes(q) &&
+    d.rating >= minRating &&
+    d.salary <= maxSalary
+  );
+}
+
+function update() {
+  const rows = filteredData();
+  const labelMode = document.getElementById("labelMode").value;
+
+  const labels = rows.map(d => {
+    if (labelMode === "all") return d.name;
+    if (labelMode === "top" && (d.rank_salary <= 5 || d.rank_rating <= 5)) return d.name;
+    return "";
+  });
+
+  const trace = {
+    x: rows.map(d => d.salary),
+    y: rows.map(d => d.rating),
+    mode: labelMode === "hover" ? "markers" : "markers+text",
+    type: "scatter",
+    text: labels,
+    textposition: "top center",
+    marker: {
+      size: rows.map(d => 10 + d.rating * 2),
+      opacity: 0.82,
+      line: { width: 1 }
+    },
+    customdata: rows.map(d => [d.name, d.salary_label, d.rank_salary, d.rank_rating]),
+    hovertemplate:
+      "<b>%{customdata[0]}</b><br>" +
+      "Salary: %{customdata[1]}<br>" +
+      "Rating: %{y:.1f} / 5<br>" +
+      "Salary rank: %{customdata[2]}<br>" +
+      "Rating rank: %{customdata[3]}" +
+      "<extra></extra>"
+  };
+
+  const layout = {
+    margin: {l: 78, r: 30, t: 28, b: 72},
+    xaxis: {
+      title: "Annual salary",
+      tickprefix: "$",
+      separatethousands: true,
+      zeroline: false
+    },
+    yaxis: {
+      title: "Rating",
+      range: [0, 5.25],
+      zeroline: false
+    },
+    hovermode: "closest",
+    plot_bgcolor: "white",
+    paper_bgcolor: "white"
+  };
+
+  Plotly.react("plot", [trace], layout, {responsive: true, displaylogo: false});
+
+  document.getElementById("nMetric").textContent = rows.length;
+  document.getElementById("medianSalary").textContent = rows.length ? fmtMoney(median(rows.map(d => d.salary))) : "—";
+  document.getElementById("medianRating").textContent = rows.length ? median(rows.map(d => d.rating)).toFixed(1) : "—";
+  const c = corr(rows.map(d => d.salary), rows.map(d => d.rating));
+  document.getElementById("corrMetric").textContent = Number.isFinite(c) ? c.toFixed(2) : "—";
+
+  renderTable(rows);
+}
+
+function renderTable(rows) {
+  const table = document.getElementById("table");
+  const sorted = [...rows].sort((a,b) => {
+    if (typeof a[sortKey] === "string") return sortDir * a[sortKey].localeCompare(b[sortKey]);
+    return sortDir * (a[sortKey] - b[sortKey]);
+  });
+
+  const headers = [
+    ["name", "Name"],
+    ["salary", "Salary"],
+    ["rating", "Rating"],
+    ["rank_salary", "Salary Rank"],
+    ["rank_rating", "Rating Rank"]
+  ];
+
+  table.innerHTML = `
+    <thead><tr>
+      ${headers.map(([key, label]) => `<th data-key="${key}">${label} ${sortKey === key ? (sortDir === 1 ? "▲" : "▼") : ""}</th>`).join("")}
+    </tr></thead>
+    <tbody>
+      ${sorted.map(d => `
+        <tr>
+          <td>${d.name}</td>
+          <td>${fmtMoney(d.salary)}</td>
+          <td>${d.rating.toFixed(1)}</td>
+          <td>${d.rank_salary}</td>
+          <td>${d.rank_rating}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+
+  table.querySelectorAll("th").forEach(th => {
+    th.onclick = () => {
+      const key = th.getAttribute("data-key");
+      if (sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = key === "name" ? 1 : -1; }
+      update();
+    };
+  });
+}
+
+["search", "minRating", "maxSalary", "labelMode"].forEach(id => {
+  document.getElementById(id).addEventListener("input", update);
+  document.getElementById(id).addEventListener("change", update);
+});
+
+update();
+</script>
+</body>
+</html>
