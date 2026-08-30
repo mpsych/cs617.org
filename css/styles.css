@@ -1,6 +1,6 @@
 :root {
   --umbblue: #005a8c;
-  --linkblue: #007fc4;
+  --linkblue: hotpink;
   --border: #696969;
 }
 
@@ -334,4 +334,42 @@ button:hover {
 
 .document_title {
   margin-left: 20px;
+}
+
+.student-projects {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.project {
+  text-align: center;
+}
+
+.project img {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #000;
+}
+
+.project h3 {
+  margin: 10px 0 5px;
+}
+
+.project p {
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .student-projects {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .student-projects {
+    grid-template-columns: 1fr;
+  }
 }
